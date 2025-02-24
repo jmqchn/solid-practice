@@ -3,7 +3,7 @@ import argparse
 from gridgame.model import GridGameModel
 from gridgame.view import View
 from gridgame.controller import Controller
-
+from gridgame.variants import SymbolPlacer, TicTacToeSymbolPlacer
 
 def str_list(line: str) -> list[str]:
     return line.split(',')
@@ -30,16 +30,32 @@ def make_model(args: argparse.Namespace):
                 grid_size=args.size,
                 player_count=args.player_count,
                 player_symbols=args.symbols,
+                symbol_placer=TicTacToeSymbolPlacer()
             )
 
         case "wild":
-            raise NotImplementedError('wild variant is not yet implemented')
+            return GridGameModel(
+                grid_size=args.size,
+                player_count=args.player_count,
+                player_symbols=args.symbols,
+                symbol_placer=WildSymbolPlacer()
+            )
 
         case "notakto":
-            raise NotImplementedError('notakto variant is not yet implemented')
+            return GridGameModel(
+                grid_size=args.size,
+                player_count=args.player_count,
+                player_symbols=args.symbols,
+                symbol_placer=NotaktoSymbolPlacer()
+            )
 
         case "pick15":
-            raise NotImplementedError('pick15 variant is not yet implemented')
+            return GridGameModel(
+                grid_size=args.size,
+                player_count=args.player_count,
+                player_symbols=args.symbols,
+                symbol_placer=Pick15SymbolPlacer()
+            )
 
         case _:
             raise NotImplementedError(f'Variant "{args.variant}" is unknown')

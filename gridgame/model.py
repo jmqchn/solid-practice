@@ -1,10 +1,10 @@
 from collections.abc import Sequence
 
 from .project_types import PlayerId, Cell, Symbol, Feedback, Field
-
+from .variants import SymbolPlacer
 
 class GridGameModel:
-    def __init__(self, grid_size: int, player_symbols: Sequence[Symbol], player_count: int):
+    def __init__(self, grid_size: int, player_symbols: Sequence[Symbol], player_count: int, symbol_placer: SymbolPlacer):
         if player_count <= 1:
             raise ValueError(
                 f'Must have at least two players (found {player_count})')
@@ -21,6 +21,7 @@ class GridGameModel:
 
         self._field = Field(grid_size)
 
+        self._symbol_placer: SymbolPlacer = symbol_placer
         self._player_count = player_count
         self._player_to_symbol: dict[PlayerId, Symbol] = {
             k: symbol
@@ -101,22 +102,17 @@ class GridGameModel:
         return [self._player_to_symbol[player]]
 
     def place_symbol(self, symbol: Symbol, cell: Cell) -> Feedback:
-        if self.is_game_over:
-            return Feedback.GAME_OVER
+        feedback = self._symbol_placer.place_symbol(
+            symbol,
+            cell,
+            self.is_game_over,
+            self.get_symbol_choices(self.current_player),
+            self._field
+            )
 
-        if symbol not in self.get_symbol_choices(self.current_player):
-            return Feedback.INVALID_SYMBOL
-
-        if not self._field.is_within_bounds(cell):
-            return Feedback.OUT_OF_BOUNDS
-
-        if self._field.get_symbol_at(cell) is not None:
-            return Feedback.OCCUPIED
-
-        self._field.place_symbol(symbol, cell)
         self._switch_to_next_player()
 
-        return Feedback.VALID
+        return feedback
 
     def _switch_to_next_player(self):
         self._current_player = self.next_player
